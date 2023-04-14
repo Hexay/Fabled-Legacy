@@ -28,4 +28,4 @@ getgenv().WeaponsType = "physicalPower"
 getgenv().AutoUpgrade = true --tries to upgrade each piece by 1 level in their respective stat
 --Note it only unequips after first run so auto equip/upgrade wont work on first ever run
 
-loadstring(game:HttpGet"https://raw.githubusercontent.com/Hexay/Fabled-Legacy/main/main/main.lua)()
+loadstring(game:HttpGet"https://raw.githubusercontent.com/Hexay/Fabled-Legacy/main/main/main.lua")()
