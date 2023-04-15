@@ -4,8 +4,8 @@
 getgenv().Map = "Raided Village"
 getgenv().Hardcore = false --If true then bot won't suicide
 getgenv().Private = true
-getgenv().Difficulty = "Expert"
-getgenv().LevelRequirement = 5 --Minimun level, this must be set correctly else invalid dungeon
+getgenv().Difficulty = "Normal"
+getgenv().LevelRequirement = 1 --Minimun level, this must be set correctly else invalid dungeon
 
 --Auto Points Settings
 getgenv().AutoPointsToggle = true --false to disable
