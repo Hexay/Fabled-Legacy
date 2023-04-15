@@ -1,3 +1,5 @@
+--Made by Hexay#4488
+--Join the discord! discord.gg/K6BBmMuDPQ
 --Auto Start Settings
 getgenv().Map = "Raided Village"
 getgenv().Hardcore = false --If true then bot won't suicide
