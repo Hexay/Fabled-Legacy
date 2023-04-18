@@ -1,0 +1,229 @@
+--Made by Hexay#4488
+--Join the discord! discord.gg/K6BBmMuDPQ
+--Auto Start Settings
+getgenv().Map = "Raided Village"
+getgenv().Hardcore = false --If true then bot won't suicide
+getgenv().Private = true
+getgenv().Difficulty = "Expert"
+getgenv().LevelRequirement = 5 --Minimun level, this must be set correctly else invalid dungeon
+
+--Auto Points Settings
+getgenv().AutoPointsToggle = true --false to disable
+getgenv().strength = 3 --ratio between the two ie for every x strength there will be y health
+getgenv().health = 1
+getgenv().spell = 0
+
+--Auto Farm Settings
+getgenv().tpToTargets = true --false to disable tping
+getgenv().timeBetweenTp = 20 --Only change these if you are getting kicked, increase if so. Also happens more on hardcore (as no suicide)
+getgenv().distanceBetweenTp = 100
+getgenv().healthPercentageToKill = 0.5
+getgenv().tpLimit = 10 --Only tps 15 times maximum
+getgenv().OffsetVector = Vector3.new(0,0,-5) --Change to lock onto the exact enemy instead of offset
+getgenv().targetType = "furthest" --either random, nearest, furthest
+getgenv().tpToBosses = true --risky feature, high kick rate so disable if getting kicked on boss (but allows fast runs)
+
+--Auto Equipped Settings Settings
+getgenv().AutoEquip = true --set to false to disable auto equip
+getgenv().HelmetType = "physicalPower" --Between these for all: physicalPower, spellPower, health (case sensitive)
+getgenv().ArmorType = "physicalPower"
+getgenv().LegsType = "health"
+getgenv().WeaponsType = "physicalPower"
+getgenv().AutoUpgrade = true --tries to upgrade each piece by 1 level in their respective stat
+--Note it only unequips after first run so auto equip/upgrade wont work on first ever run
+
+if game.PlaceId == 11872917490 then
+    wait(3)
+    if getgenv().AutoPointsToggle == true then
+        local name = game.Players.LocalPlayer.Name
+        game:GetService("ReplicatedStorage").resetSkillPoints:FireServer()
+        wait(0.3)
+        local total = tonumber(game:GetService("Players")[name].PlayerGui.Inventory.inventoryFrame.leftFrame.skillPointsFrame.remainingPointsFrame.TextLabel.Text)
+        game:GetService("ReplicatedStorage").addSkillPoints:FireServer("physical",math.floor((strength/(strength+health+spell))*total))
+        wait(0.3)
+        game:GetService("ReplicatedStorage").addSkillPoints:FireServer("health",math.floor((health/(strength+health+spell))*total))
+        wait(0.3)
+        game:GetService("ReplicatedStorage").addSkillPoints:FireServer("spell",math.floor((spell/(strength+health+spell))*total))
+        total = tonumber(game:GetService("Players")[name].PlayerGui.Inventory.inventoryFrame.leftFrame.skillPointsFrame.remainingPointsFrame.TextLabel.Text)
+        if total ~= 0 then
+            wait(0.3)
+            game:GetService("ReplicatedStorage").addSkillPoints:FireServer("physical",total)
+        end
+    end
+    if getgenv().AutoEquip then
+        wait(3)
+        function findHighest(itemTypeVal, itemStat)
+            local name = game.Players.LocalPlayer.Name
+            local level = tonumber(game:GetService("Workspace"):FindFirstChild(name).HumanoidRootPart.normalPlayer.playerNameplate.playerLevelBorder.playerLevel.TextLabel.Text)
+            local highest = 0
+            local id = "a"
+            for i,v in pairs(game:GetService("Players")[name].PlayerGui.Inventory.inventoryFrame.rightFrame.ScrollingFrame:GetChildren()) do
+                if v:FindFirstChild("itemStats") and v.itemStats:FindFirstChild(itemStat) and v.itemStats[itemStat].Value > highest and level >= v.itemStats.levelReq.Value and v.itemStats.itemType.Value == itemTypeVal then
+                    highest = v.itemStats[itemStat].Value
+                    id = v.itemStats.GUID.Value
+                end
+            end
+            if highest > game:GetService("Players")[name].itemStats[itemTypeVal][itemStat].Value then
+                wait(0.05)
+                game:GetService("ReplicatedStorage").equipItem:InvokeServer(id)
+                wait(0.25)
+                game:GetService("ReplicatedStorage").upgradeItem:InvokeServer(id, 1, itemStat, itemTypeVal)
+                wait(0.05)
+            end
+        end
+        wait()
+        findHighest("legs", getgenv().LegsType)
+        findHighest("helmets",getgenv().HelmetType)
+        findHighest("weapons",getgenv().WeaponsType)
+        findHighest("armors",getgenv().ArmorType)
+    end
+    wait(1.5)
+    game:GetService("ReplicatedStorage").CreateParty:InvokeServer({["Map"] = getgenv().Map,["LevelRequirement"] = getgenv().LevelRequirement,["Hardcore"] = getgenv().Hardcore,["Private"] = getgenv().Private,["Difficulty"] = getgenv().Difficulty})
+    game:GetService("ReplicatedStorage").StartDungeon:FireServer()
+    wait(5)
+end
+
+
+
+
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/sannin9000/Ui-Libraries/main/uwuware", true))()
+local Window = Library:CreateWindow"Dungeon Farm"
+Window:AddFolder"Credits"
+Window:AddLabel({text = "Made by Hexay#4488"})
+Window:AddLabel({text = "Join discord.gg/K6BBmMuDPQ"})
+Library:Init()
+wait(2)
+getgenv().aa = true
+getgenv().attacking = true
+game:GetService("ReplicatedStorage").StartDungeon:FireServer()
+wait(6)
+local hum = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+for i,v in pairs(getconnections(game.Players.LocalPlayer.Character.HumanoidRootPart:GetPropertyChangedSignal("CFrame"))) do
+    v:Disable()
+end
+oldnamecall = hookmetamethod(game,"__namecall",newcclosure(function(self,...)
+    if getnamecallmethod() == "Kick" and self == game.Players.LocalPlayer then
+        return
+    end
+    return oldnamecall(self,...)
+end))
+spawn(function()
+    local VirtualInputManager = game:GetService("VirtualInputManager")
+    while true do
+        VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.W, false, game)
+        wait(1)
+    end
+end)
+
+spawn(function()
+    while true do
+        while getgenv().attacking and not game.Workspace:FindFirstChild("SpellPart4") do
+            game:GetService("ReplicatedStorage").Swing:FireServer()
+            wait()
+            game:GetService("ReplicatedStorage").useSpell:FireServer("Q")
+            wait()
+            game:GetService("ReplicatedStorage").useSpell:FireServer("E")
+            wait()
+        end
+        wait()
+    end
+end)
+
+for i, v in pairs(game:GetService("Workspace")["Dungeon Map"].Spikes:GetChildren()) do
+    v:Destroy()
+end
+
+local value = game:GetService("Workspace").dungeonFinished
+local tpCounter = 0
+value:GetPropertyChangedSignal("Value"):Connect(function()
+    if getgenv().AutoEquip then
+        local name = game.Players.LocalPlayer.Name
+        for i,v in pairs(game:GetService("Players")[name].PlayerGui.Inventory.inventoryFrame.leftFrame.equippedItemsFrame:GetChildren()) do
+            if v:FindFirstChild("itemStats") and not v.itemStats:FindFirstChild("description") then
+                print(v.itemStats.GUID.Value)
+                game:GetService("ReplicatedStorage").unequipItem:InvokeServer(v.itemStats.GUID.Value)
+            end
+        end
+    end
+end)
+
+local time = tick()-getgenv().timeBetweenTp-1
+while getgenv().aa do task.wait()
+    local v = nil
+    if getgenv().targetType == "random" then
+        for i,x in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
+            if x:FindFirstChild("HumanoidRootPart") then
+                v = x
+            end
+        end
+    elseif getgenv().targetType == "furthest" then
+        local dist = 0
+        for i,x in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
+            if x:FindFirstChild("HumanoidRootPart") and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                dT = (x.HumanoidRootPart.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+                if dT > dist then
+                   dist = dT 
+                   v = x
+                end
+            end
+        end
+    else
+        local dist = 10000
+        for i,x in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
+            if x:FindFirstChild("HumanoidRootPart") and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                dT = (x.HumanoidRootPart.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+                if dT < dist then
+                   dist = dT 
+                   v = x
+                end
+            end
+        end
+    end
+    if v ~= nil then
+        if game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") and game.Players.LocalPlayer.Character.Humanoid.Health > 0 and v:FindFirstChild("HumanoidRootPart") and v:FindFirstChild("Humanoid") and v.Parent.Name == "Enemies" and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            while v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 and game.Players.LocalPlayer.Character.Humanoid.Health > 0 do
+                if game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and game.Players.LocalPlayer.Character:FindFirstChild("Head") and (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - v.HumanoidRootPart.Position).magnitude > 5 and game.Players.LocalPlayer.Character:FindFirstChild("Head")  then
+                    if (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - v.HumanoidRootPart.Position).magnitude > 50 then
+                        if game.Players.LocalPlayer.Character.Humanoid.Health/game.Players.LocalPlayer.Character.Humanoid.MaxHealth < getgenv().healthPercentageToKill and getgenv().Hardcore == false then
+                            pcall(function()
+                                game.Players.LocalPlayer.Character.Head:Destroy()
+                                print("KILLED SELF")
+                                wait(0.5)
+                            end)
+                            break
+                        else
+                            if (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - v.HumanoidRootPart.Position).magnitude > getgenv().distanceBetweenTp and tick()-time > getgenv().timeBetweenTp and getgenv().tpToTargets and tpCounter < getgenv().tpLimit then
+                                if (not string.match(v.Name, "Joe") and not string.match(v.Name, "Leader")) or getgenv().tpToBosses then
+                                    pcall(function()
+                                        wait(0.3)
+                                        tpCounter = tpCounter + 1
+                                        print("TP", tpCounter)
+                                        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.HumanoidRootPart.CFrame
+                                        time = tick()
+                                    end)
+                                end
+                            end
+                        end
+                    end
+                    pcall(function()
+                        local camera = workspace.CurrentCamera
+                        local head = game.Players.LocalPlayer.Character:FindFirstChild("Head")
+                        if head then
+                            head = head.Position
+                        end
+                        local vHP = v:FindFirstChild("HumanoidRootPart")
+                        if head and vHP then
+                            camera.CFrame = CFrame.new(head, vHP.Position + getgenv().OffsetVector)
+                        end
+                    end)
+                end      
+                wait()
+            end
+        end    
+    end 
+    wait()
+end
+
+
+
+
